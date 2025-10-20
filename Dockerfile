@@ -20,10 +20,9 @@ WORKDIR /var/www/html
 RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
 
 # KESİN ÇÖZÜM: Caddy konfigürasyon dosyasını printf ile temiz bir şekilde oluştur.
-# \n yeni satır, \t tab karakteri ekler.
-RUN printf ":80 {\n\troot * /var/www/html\n\tphp_fastcgi unix//var/run/php-fpm.sock\n\tfile_server\n}" > /etc/caddy/Caddyfile
+# Render'daki "host not allowed" hatasını çözmek için 'admin off' eklenmiştir.
+RUN printf ":80 {\n\tadmin off\n\troot * /var/www/html\n\tphp_fastcgi unix//var/run/php-fpm.sock\n\tfile_server\n}" > /etc/caddy/Caddyfile
 
 # Caddy ve PHP FPM'i aynı anda başlat.
 # caddy run komutu, Caddy'nin ana process (PID 1) olmasını ve konteynerin ayakta kalmasını sağlar.
-# Not: Caddyfile'ı belirtmek için CMD'ye gerek yoktur, varsayılan olarak /etc/caddy/Caddyfile'ı okur.
 CMD php-fpm -D && caddy run
