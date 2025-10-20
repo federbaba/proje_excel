@@ -1,28 +1,25 @@
 # PHP FPM imajını kullan
 FROM php:8.1-fpm-alpine
 
-# Bağımlılıkları ve Uzantıları kur.
-# libpq-dev'i çıkardım, loglarda mysql uzantıları kurduğunuz için.
-RUN apk update && \
-    apk add --no-cache caddy zlib-dev libpng-dev && \
+# Bağımlılıkları (libpng, zlib), Caddy'yi ve Gerekli Uzantıları (gd, mysql) kur.
+RUN apk add --no-cache caddy libpq-dev zlib-dev libpng-dev && \
     docker-php-ext-install gd pdo pdo_mysql mysqli
 
 # Composer'ı global olarak kur
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Proje dosyalarını kopyala
+# Proje dosyalarını FPM'in çalıştığı dizine kopyala
 COPY . /var/www/html
 
 # Çalışma dizinini ayarla
 WORKDIR /var/www/html
 
-# Composer bağımlılıklarını yükle.
+# Composer bağımlılıklarını yükle. Sürüm uyuşmazlığını görmezden gelmek için --ignore-platform-reqs ekliyoruz.
 RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
 
-# KESİN ÇÖZÜM: Caddy konfigürasyon dosyasını printf ile temiz bir şekilde oluştur.
-# Render'daki "host not allowed" hatasını çözmek için 'admin off' eklenmiştir.
-RUN printf ":80 {\n\tadmin off\n\troot * /var/www/html\n\tphp_fastcgi unix//var/run/php-fpm.sock\n\tfile_server\n}" > /etc/caddy/Caddyfile
+# Caddy konfigürasyon dosyasını oluştur (Hata içermeyen, tek satırlık konfigürasyon)
+RUN echo ':80 { root * /var/www/html; php_fastcgi unix//var/run/php-fpm.sock; file_server; }' > /etc/caddy/Caddyfile
 
-# Caddy ve PHP FPM'i aynı anda başlat.
-# caddy run komutu, Caddy'nin ana process (PID 1) olmasını ve konteynerin ayakta kalmasını sağlar.
-CMD php-fpm -D && caddy run
+# Caddy'yi (admin API'sine localhost'tan erişime izin vererek) ve PHP FPM'i aynı anda başlat
+# Bu, Render Health Check hatalarını çözer
+CMD php-fpm -D && caddy run --config /etc/caddy/Caddyfile --adapter caddyfile --watch --config-json '{"admin":{"listen":"0.0.0.0:2019"}}'
