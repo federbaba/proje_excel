@@ -17,8 +17,9 @@ WORKDIR /var/www/html
 # Composer bağımlılıklarını yükle. Sürüm uyuşmazlığını görmezden gelmek için --ignore-platform-reqs ekliyoruz.
 RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
 
-# Caddy konfigürasyon dosyasını oluştur (HATA DÜZELTMESİ YAPILDI!)
-RUN echo "{$CADDY_ROOT}/ { \n  root * /var/www/html \n  php_fastcgi unix//var/run/php-fpm.sock \n  file_server \n }" > /etc/caddy/Caddyfile
+# Caddy konfigürasyon dosyasını oluştur (KESİNLİKLE DÜZELTİLDİ!)
+# Render'ın varsayılan portu için :80 kullanıyoruz.
+RUN echo ":80 { \n  root * /var/www/html \n  php_fastcgi unix//var/run/php-fpm.sock \n  file_server \n }" > /etc/caddy/Caddyfile
 
 # Caddy ve PHP FPM'i aynı anda başlat
 CMD php-fpm -D && caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
