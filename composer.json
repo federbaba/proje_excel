@@ -1,0 +1,6 @@
+{
+    "name": "marte/proje_excel",
+    "require": {
+        "phpoffice/phpspreadsheet": "^5.1"
+    }
+}
