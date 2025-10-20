@@ -1,9 +1,9 @@
 # PHP FPM imajını kullan
 FROM php:8.1-fpm-alpine
 
-# Bağımlılıkları, Zlib'i, Caddy'yi ve Gerekli Uzantıları kur.
-# Zlib-dev (zlib'in geliştirme paketi), GD, MySQL/PDO uzantılarının kurulması için şarttır.
-RUN apk add --no-cache caddy libpq-dev zlib-dev && \
+# Bağımlılıkları, Zlib'i, Libpng'yi, Caddy'yi ve Gerekli Uzantıları kur.
+# libpng-dev ve zlib-dev, gd uzantısının derlenmesi için şarttır.
+RUN apk add --no-cache caddy libpq-dev zlib-dev libpng-dev && \
     docker-php-ext-install gd pdo pdo_mysql mysqli
 
 # Composer'ı global olarak kur
