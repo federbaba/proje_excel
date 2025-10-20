@@ -1,9 +1,9 @@
-# PHP'nin resmi ve hafif Alpine versiyonunu kullan
-FROM php:8.2-apache-alpine
+# PHP'nin sağlam 8.1 sürümünü Apache web sunucusuyla kullan.
+FROM php:8.1-apache-alpine
 
-# Composer'ı ve gerekli PHP uzantılarını yükle
+# Gerekli PHP uzantılarını (MySQL/PDO) kur ve Composer'ı indir/kur.
 RUN docker-php-ext-install mysqli pdo pdo_mysql && \
     curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Proje dosyalarını kopyala
+# Proje dosyalarını Docker içindeki web sunucusu dizinine kopyala.
 COPY . /var/www/html/
