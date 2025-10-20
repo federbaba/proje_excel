@@ -20,17 +20,9 @@ WORKDIR /var/www/html
 # Composer bağımlılıklarını yükle.
 RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
 
-# KESİN ÇÖZÜM: Caddy konfigürasyon dosyasını GÜVENİLİR ECHO komutlarıyla oluştur.
-# Bu, printf kaynaklı tüm yorumlama hatalarını ortadan kaldırır.
-RUN echo "{" > /etc/caddy/Caddyfile && \
-    echo "    admin off" >> /etc/caddy/Caddyfile && \
-    echo "}" >> /etc/caddy/Caddyfile && \
-    echo "" >> /etc/caddy/Caddyfile && \
-    echo ":80 {" >> /etc/caddy/Caddyfile && \
-    echo "    root * /var/www/html" >> /etc/caddy/Caddyfile && \
-    echo "    php_fastcgi unix//var/run/php-fpm.sock" >> /etc/caddy/Caddyfile && \
-    echo "    file_server" >> /etc/caddy/Caddyfile && \
-    echo "}" >> /etc/caddy/Caddyfile
+# KESİN ÇÖZÜM: Caddy konfigürasyon dosyasını Admin API hatasını çözmek için 'echo -e' ile oluştur.
+# Bu, shell kaçış karakterlerini doğru yorumlayarak 'admin off' yönergesini global bloğa yazar.
+RUN echo -e "{\n\tadmin off\n}\n\n:80 {\n\troot * /var/www/html\n\tphp_fastcgi unix//var/run/php-fpm.sock\n\tfile_server\n}" > /etc/caddy/Caddyfile
 
 # Caddy ve PHP FPM'i aynı anda başlat
 CMD php-fpm -D && caddy run
