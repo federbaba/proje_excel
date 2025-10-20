@@ -1,9 +1,9 @@
 # PHP FPM imajını kullan
 FROM php:8.1-fpm-alpine
 
-# Gerekli kütüphaneleri ve UZANTILARI kur
-# GD, MySQL/PDO uzantılarını ve libpq (PostgreSQL için) kuruyoruz.
-RUN apk add --no-cache caddy libpq-dev && \
+# Bağımlılıkları, Zlib'i, Caddy'yi ve Gerekli Uzantıları kur.
+# Zlib-dev (zlib'in geliştirme paketi), GD, MySQL/PDO uzantılarının kurulması için şarttır.
+RUN apk add --no-cache caddy libpq-dev zlib-dev && \
     docker-php-ext-install gd pdo pdo_mysql mysqli
 
 # Composer'ı global olarak kur
@@ -15,7 +15,7 @@ COPY . /var/www/html
 # Çalışma dizinini ayarla
 WORKDIR /var/www/html
 
-# Composer bağımlılıklarını yükle. Sürüm uyuşmazlığını geçici olarak görmezden gelmek için --ignore-platform-reqs ekliyoruz.
+# Composer bağımlılıklarını yükle. Sürüm uyuşmazlığını görmezden gelmek için --ignore-platform-reqs ekliyoruz.
 RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
 
 # FPM'i web sunucusuna bağlayan varsayılan Caddy ayarını yap
